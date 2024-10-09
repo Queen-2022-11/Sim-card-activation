@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIM Card Activation</title>
+    <link rel="stylesheet" href="/static/style/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .response {
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+
+        .details {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .details h3 {
+            margin: 0 0 10px;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <h1>SIM Card Activation Service</h1>
+
+    <div class="container">
+        <h2>Add SIM</h2>
+        <input type="text" id="sim_number_add" placeholder="Enter SIM Number">
+        <input type="text" id="phone_number_add" placeholder="Enter Phone Number">
+        <button class="btn" onclick="addSim()">Add SIM</button>
+
+        <h2>Activate SIM</h2>
+        <input type="text" id="sim_number_activate" placeholder="Enter SIM Number">
+        <button class="btn" onclick="activateSim()">Activate</button>
+
+        <h2>Deactivate SIM</h2>
+        <input type="text" id="sim_number_deactivate" placeholder="Enter SIM Number">
+        <button class="btn" onclick="deactivateSim()">Deactivate</button>
+
+        <h2>Get SIM Details</h2>
+        <input type="text" id="sim_number_details" placeholder="Enter SIM Number">
+        <button class="btn" onclick="getSimDetails()">Get Details</button>
+
+        <div id="response" class="response"></div>
+    </div>
+
+    <script>
+        async function addSim() {
+            const simNumber = document.getElementById("sim_number_add").value;
+            const phoneNumber = document.getElementById("phone_number_add").value;
+            const response = await fetch('/add-sim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sim_number: simNumber, phone_number: phoneNumber })
+            });
+            const result = await response.json();
+            
+            if (response.ok) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'SIM card added successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+                // Clear input fields after successful addition
+                document.getElementById("sim_number_add").value = '';
+                document.getElementById("phone_number_add").value = '';
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.error || 'An error occurred!',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+
+        async function activateSim() {
+            const simNumber = document.getElementById("sim_number_activate").value;
+            const response = await fetch('/activate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sim_number: simNumber })
+            });
+            const result = await response.json();
+
+            if (response.ok) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'SIM card activated successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+                document.getElementById("sim_number_activate").value = '';
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.error || 'An error occurred!',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+
+        async function deactivateSim() {
+            const simNumber = document.getElementById("sim_number_deactivate").value;
+            const response = await fetch('/deactivate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sim_number: simNumber })
+            });
+            const result = await response.json();
+
+            if (response.ok) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'SIM card deactivated successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+                document.getElementById("sim_number_deactivate").value = '';
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.error || 'An error occurred!',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+
+        async function getSimDetails() {
+            const simNumber = document.getElementById("sim_number_details").value;
+            const response = await fetch(`/sim-details/${simNumber}`);
+            const result = await response.json();
+
+            if (response.ok) {
+                document.getElementById("response").innerHTML = `
+                    <div class="details">
+                        <h3>SIM Details:</h3>
+                        <p><strong>SIM Number:</strong> ${result.sim_number}</p>
+                        <p><strong>Phone Number:</strong> ${result.phone_number}</p>
+                        <p><strong>Status:</strong> ${result.status}</p>
+                        <p><strong>Activation Date:</strong> ${result.activation_date || 'Not activated'}</p>
+                    </div>`;
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.error || 'An error occurred!',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+    </script>
+</body>
+</html>
